@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <title>Izzi and Zac's Calendar</title>
 
   <link rel="manifest" href="manifest.json" />
@@ -476,6 +476,188 @@ body.dark .day.empty {
       .event { font-size: 10px; padding: 5px 6px; }
       .row { grid-template-columns: 1fr; }
     }
+
+@media (max-width: 430px) {
+  html,
+  body {
+    width: 100%;
+    min-height: 100svh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+    background-attachment: fixed;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .container {
+    width: 100%;
+    min-height: 100svh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .header {
+    padding: 18px 14px 14px;
+    gap: 12px;
+  }
+
+  .title-block h1 {
+    font-size: 28px;
+    line-height: 1.05;
+  }
+
+  .title-block p {
+    font-size: 13px;
+  }
+
+  .action-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .action-row button {
+    width: 100%;
+    padding: 11px 10px;
+    font-size: 13px;
+  }
+
+  .month-controls {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 74px 1fr 74px;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .month-controls h2 {
+    min-width: 0;
+    font-size: 16px;
+  }
+
+  .month-controls button {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .top-panel,
+  .dashboard,
+  .calendar,
+  .extra-grid {
+    padding: 12px;
+  }
+
+  .top-panel {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .dashboard {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .mini-card {
+    padding: 12px;
+  }
+
+  .mini-card span {
+    font-size: 20px;
+  }
+
+  .calendar {
+    padding-top: 6px;
+  }
+
+  .weekdays,
+  .days {
+    gap: 4px;
+  }
+
+  .weekday {
+    font-size: 11px;
+    padding: 5px 0;
+  }
+
+  .day {
+    min-height: 68px;
+    border-radius: 12px;
+    padding: 5px;
+  }
+
+  .day-number {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .event {
+    font-size: 9px;
+    padding: 4px 5px;
+    border-radius: 8px;
+    margin-top: 3px;
+  }
+
+  .extra-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 18px);
+  }
+
+  .section {
+    padding: 12px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row button {
+    width: 100%;
+  }
+
+  .modal-bg {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100svh - env(safe-area-inset-top));
+    border-radius: 24px 24px 0 0;
+    padding: 18px 14px calc(env(safe-area-inset-bottom) + 18px);
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  .toast {
+    left: 12px;
+    right: 12px;
+    bottom: calc(env(safe-area-inset-bottom) + 12px);
+    max-width: none;
+  }
+}
+
   </style>
 </head>
 <body>
