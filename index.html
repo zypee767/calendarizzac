@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Izzi and Zac's Calendar</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ec4899" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Izzi & Zac" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+
+    :root {
+      --pink-50: #fff1f7;
+      --pink-100: #ffe4ef;
+      --pink-200: #ffc7df;
+      --pink-300: #ff9fc6;
+      --pink-400: #fb6fa8;
+      --pink-500: #ec4899;
+      --pink-600: #db2777;
+      --rose-700: #be185d;
+      --purple: #7c3aed;
+      --text: #3f2633;
+      --muted: #7f5267;
+      --card: rgba(255, 255, 255, 0.80);
+      --border: rgba(236, 72, 153, 0.22);
+      --shadow: rgba(190, 24, 93, 0.16);
+      --bg-one: #fff7fb;
+      --bg-two: #fff1f7;
+      --bg-three: #fdf2f8;
+    }
+
+    body.dark {
+      --pink-50: #321426;
+      --pink-100: #4a1732;
+      --text: #ffeaf4;
+      --muted: #f7b7d3;
+      --card: rgba(45, 18, 36, 0.82);
+      --border: rgba(244, 114, 182, 0.34);
+      --shadow: rgba(0, 0, 0, 0.35);
+      --bg-one: #160814;
+      --bg-two: #2a0f22;
+      --bg-three: #41142d;
+    }
+
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      padding: max(14px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+      background:
+        radial-gradient(circle at top left, #ffe4ef 0, transparent 32%),
+        radial-gradient(circle at bottom right, #fbcfe8 0, transparent 28%),
+        linear-gradient(135deg, var(--bg-one) 0%, var(--bg-two) 45%, var(--bg-three) 100%);
+      overflow-x: hidden;
+    }
+
+    body.dark {
+      background:
+        radial-gradient(circle at top left, rgba(236, 72, 153, 0.18) 0, transparent 34%),
+        radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.16) 0, transparent 30%),
+        linear-gradient(135deg, var(--bg-one), var(--bg-two), var(--bg-three));
+    }
+
+    .splash {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #ec4899, #f9a8d4);
+      color: white;
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+    }
+
+    .splash.hide { opacity: 0; visibility: hidden; }
+
+    .splash-card {
+      text-align: center;
+      padding: 30px;
+      animation: splashPop 1.2s ease infinite alternate;
+    }
+
+    .splash-heart { font-size: 58px; margin-bottom: 12px; }
+
+    @keyframes splashPop {
+      from { transform: scale(0.97); }
+      to { transform: scale(1.03); }
+    }
+
+    .floating-hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .heart {
+      position: absolute;
+      color: rgba(236, 72, 153, 0.35);
+      font-size: 18px;
+      animation: floatHeart linear forwards;
+      user-select: none;
+    }
+
+    .click-heart {
+      position: fixed;
+      pointer-events: none;
+      font-size: 22px;
+      z-index: 9999;
+      animation: popHeart 1s ease forwards;
+    }
+
+    @keyframes floatHeart {
+      0% { transform: translateY(0) scale(0.8) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-120vh) scale(1.4) rotate(25deg); opacity: 0; }
+    }
+
+    @keyframes popHeart {
+      0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+      100% { transform: translate(-50%, -140px) scale(1.8); opacity: 0; }
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    .container {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: 30px;
+      box-shadow: 0 22px 55px var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px;
+      background:
+        linear-gradient(135deg, rgba(236, 72, 153, 0.96), rgba(244, 114, 182, 0.92)),
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.42), transparent 35%);
+      color: white;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .title-block h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.05;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+
+    .title-block p { font-size: 15px; opacity: 0.95; }
+
+    .month-controls, .action-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .month-controls {
+      background: rgba(255,255,255,0.18);
+      padding: 10px;
+      border-radius: 18px;
+    }
+
+    .month-controls h2 {
+      min-width: 170px;
+      text-align: center;
+      font-size: 20px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--pink-500), var(--rose-700));
+      color: white;
+      box-shadow: 0 8px 18px rgba(219, 39, 119, 0.22);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(219,39,119,0.28); }
+    button:hover::after { content: "♡"; margin-left: 6px; animation: pulseHeart 0.8s infinite alternate; }
+    @keyframes pulseHeart { from { opacity: 0.5; } to { opacity: 1; } }
+
+    .header button, .pill-button {
+      background: rgba(255,255,255,0.94);
+      color: var(--rose-700);
+      box-shadow: none;
+    }
+
+    .top-panel {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      padding: 18px 24px 0;
+    }
+
+    .status, .upcoming, .mini-card, .section {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.70);
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-size: 14px;
+    }
+
+    body.dark .status,
+    body.dark .upcoming,
+    body.dark .mini-card,
+    body.dark .section { background: rgba(45,18,36,0.65); }
+
+    .status strong, .upcoming strong, .mini-card strong, .section h3 { color: var(--rose-700); }
+
+    .upcoming ul, .task-list, .memory-list { list-style: none; margin-top: 8px; display: grid; gap: 7px; }
+
+    .upcoming li, .task-list li, .memory-list li {
+      background: var(--pink-50);
+      border: 1px solid var(--pink-100);
+      border-radius: 12px;
+      padding: 9px 10px;
+      color: var(--muted);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      padding: 18px 24px 0;
+    }
+
+    .mini-card span {
+      display: block;
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--text);
+      margin-top: 4px;
+    }
+
+    .calendar { padding: 24px; }
+
+    .weekdays, .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-weight: 800;
+      color: var(--rose-700);
+      padding: 10px;
+      letter-spacing: 0.3px;
+    }
+
+    .day {
+      min-height: 126px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 11px;
+      background: rgba(255,255,255,0.80);
+      cursor: pointer;
+      transition: 0.18s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body.dark .day { background: rgba(255,255,255,0.06); }
+
+    .day:hover { border-color: var(--pink-500); background: rgba(255,250,253,0.95); transform: translateY(-2px); }
+    body.dark .day:hover { background: rgba(255,255,255,0.12); }
+    .day.empty { background: rgba(255,228,239,0.38); cursor: default; transform: none; }
+
+    .day-number {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      margin-bottom: 8px;
+      border-radius: 999px;
+      color: var(--text);
+    }
+
+    .event {
+      background: linear-gradient(135deg, #ffe4ef, #fce7f3);
+      color: var(--rose-700);
+      border: 1px solid rgba(236,72,153,0.18);
+      padding: 6px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-top: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event.izzi { background: #fce7f3; color: #be185d; }
+    .event.zac { background: #ede9fe; color: #5b21b6; }
+    .today { border: 2px solid var(--pink-500); box-shadow: 0 0 0 4px rgba(236,72,153,0.10); }
+    .today .day-number { background: var(--pink-500); color: white; }
+
+    .extra-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 0 24px 24px;
+    }
+
+    .section h3 { margin-bottom: 10px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .spotify-box {
+      display: grid;
+      gap: 9px;
+    }
+
+    .date-idea {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 8px 0 12px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      max-width: 360px;
+      background: #ffffff;
+      color: #3f2633;
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--pink-500);
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: 0 18px 35px rgba(190,24,93,0.18);
+      display: none;
+      z-index: 20;
+    }
+
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(79,25,50,0.46);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 10;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 470px;
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(255,255,255,0.90);
+      border-radius: 26px;
+      padding: 24px;
+      box-shadow: 0 24px 60px rgba(80,7,36,0.24);
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    body.dark .modal { background: #291322; }
+
+    .modal h2 {
+      margin-bottom: 16px;
+      font-size: 24px;
+      color: var(--rose-700);
+    }
+
+    label {
+      display: block;
+      font-weight: 800;
+      margin: 12px 0 6px;
+      color: var(--text);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      font-size: 14px;
+      background: #fffafd;
+      color: #3f2633;
+      outline: none;
+    }
+
+    body.dark input, body.dark textarea, body.dark select {
+      background: #3b1a2c;
+      color: #ffeaf4;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--pink-500);
+      box-shadow: 0 0 0 4px rgba(236,72,153,0.10);
+    }
+
+    textarea { resize: vertical; min-height: 84px; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+    .secondary { background: #9d6b80; }
+    .danger { background: #dc2626; }
+
+    .event-list { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+
+    .event-list-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      background: var(--pink-50);
+      border: 1px solid var(--pink-100);
+      padding: 12px;
+      border-radius: 16px;
+      margin-top: 8px;
+    }
+
+    .event-list-item strong { display: block; margin-bottom: 4px; color: var(--rose-700); }
+    .event-list-item span { display: block; color: var(--muted); font-size: 13px; }
+    .small-btn { padding: 7px 10px; font-size: 12px; flex-shrink: 0; }
+    .mini-note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .task-done { text-decoration: line-through; opacity: 0.65; }
+
+    @media (max-width: 880px) {
+      body { padding: 10px; }
+      .header, .top-panel, .dashboard, .calendar, .extra-grid { padding: 16px; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .month-controls { width: 100%; justify-content: space-between; }
+      .month-controls h2 { min-width: auto; font-size: 16px; }
+      .top-panel, .extra-grid { grid-template-columns: 1fr; }
+      .dashboard { grid-template-columns: 1fr 1fr; }
+      .weekdays, .days { gap: 5px; }
+      .weekday { font-size: 12px; padding: 6px 2px; }
+      .day { min-height: 86px; padding: 7px; border-radius: 14px; }
+      .day-number { width: 24px; height: 24px; font-size: 12px; }
+      .event { font-size: 10px; padding: 5px 6px; }
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash" id="splash">
+    <div class="splash-card">
+      <div class="splash-heart">💗</div>
+      <h1>Izzi & Zac</h1>
+      <p>Loading your shared calendar...</p>
+    </div>
+  </div>
+
+  <div class="floating-hearts" id="floatingHearts"></div>
+
+  <main class="app">
+    <div class="container">
+      <div class="header">
+        <div class="title-block">
+          <h1>Izzi and Zac's Calendar</h1>
+          <p>Less things forgotten, more love between us.</p>
+        </div>
+
+        <div class="action-row">
+          <button class="pill-button" onclick="toggleDarkMode()">Dark mode</button>
+          <button class="pill-button" onclick="installApp()">Install app</button>
+        </div>
+
+        <div class="month-controls">
+          <button onclick="changeMonth(-1)">Previous</button>
+          <h2 id="monthYear"></h2>
+          <button onclick="changeMonth(1)">Next</button>
+        </div>
+      </div>
+
+      <div class="top-panel">
+        <div class="status" id="status"><strong>Connecting:</strong> linking to your shared calendar...</div>
+        <div class="upcoming">
+          <strong>Coming up</strong>
+          <ul id="upcomingList"><li>No events loaded yet.</li></ul>
+        </div>
+      </div>
+
+      <div class="dashboard">
+        <div class="mini-card"><strong>Anniversary</strong><span id="anniversaryCountdown">Set date</span></div>
+        <div class="mini-card"><strong>Next date</strong><span id="nextDateCountdown">None</span></div>
+        <div class="mini-card"><strong>Total plans</strong><span id="totalPlans">0</span></div>
+        <div class="mini-card"><strong>This month</strong><span id="monthPlans">0</span></div>
+      </div>
+
+      <div class="calendar">
+        <div class="weekdays">
+          <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div><div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+        </div>
+        <div class="days" id="days"></div>
+      </div>
+
+      <div class="extra-grid">
+        <section class="section">
+          <h3>Shared checklist</h3>
+          <ul class="task-list" id="taskList"><li>No tasks yet.</li></ul>
+          <div class="form-row">
+            <input id="taskInput" placeholder="Add a shared task..." />
+            <button onclick="addTask()">Add</button>
+          </div>
+        </section>
+
+        <section class="section">
+          <h3>Date night generator</h3>
+          <div class="date-idea" id="dateIdea">Tap the button for an idea.</div>
+          <button onclick="newDateIdea()">New idea</button>
+        </section>
+
+        <section class="section">
+          <h3>Memories</h3>
+          <ul class="memory-list" id="memoryList"><li>No memories saved yet.</li></ul>
+          <div class="form-row">
+            <input id="memoryInput" placeholder="Save a memory..." />
+            <button onclick="addMemory()">Save</button>
+          </div>
+        </section>
+
+        <section class="section">
+          <h3>Spotify</h3>
+          <div class="spotify-box">
+            <input id="spotifyInput" placeholder="Paste your Spotify playlist link..." />
+            <button onclick="saveSpotifyLink()">Save playlist</button>
+            <a id="spotifyLink" target="_blank" rel="noopener" style="color: var(--rose-700); font-weight: 800;">No playlist saved yet.</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <h2 id="modalDate"></h2>
+
+      <label for="eventTitle">What is happening?</label>
+      <input type="text" id="eventTitle" placeholder="Dinner, Dessert, Date, Movie..." />
+
+      <div class="row">
+        <div>
+          <label for="eventTime">Time</label>
+          <input type="time" id="eventTime" />
+        </div>
+        <div>
+          <label for="eventPerson">Person</label>
+          <select id="eventPerson">
+            <option value="Both">Both</option>
+            <option value="Izzi">Izzi</option>
+            <option value="Zac">Zac</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="eventType">Type</label>
+      <select id="eventType">
+        <option value="Plan">Plan</option>
+        <option value="Date">Date</option>
+        <option value="Anniversary">Anniversary</option>
+        <option value="Reminder">Reminder</option>
+        <option value="Work">Work</option>
+        <option value="Study">Study</option>
+      </select>
+
+      <label for="eventReminder">Alert</label>
+      <select id="eventReminder">
+        <option value="0">At the event time</option>
+        <option value="5">5 minutes before</option>
+        <option value="15">15 minutes before</option>
+        <option value="30">30 minutes before</option>
+        <option value="60">1 hour before</option>
+        <option value="1440">1 day before</option>
+      </select>
+      <p class="mini-note">Leave the time blank if you do not need an alert.</p>
+
+      <label for="eventNotes">Notes</label>
+      <textarea id="eventNotes" placeholder="Optional notes"></textarea>
+
+      <div class="modal-actions">
+        <button class="secondary" onclick="closeModal()">Close</button>
+        <button onclick="saveEvent()">Save event</button>
+      </div>
+
+      <div class="event-list" id="eventList"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCSthVaw1Hv93HqcHSQc3A8EjEdUp2xfcg",
+      authDomain: "calendar-acc4b.firebaseapp.com",
+      projectId: "calendar-acc4b",
+      storageBucket: "calendar-acc4b.firebasestorage.app",
+      messagingSenderId: "28678412162",
+      appId: "1:28678412162:web:c2b1746f389e531ed6e19b",
+      measurementId: "G-7RLNTZN9LL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const $ = id => document.getElementById(id);
+    const daysEl = $("days");
+    const monthYearEl = $("monthYear");
+    const modalBg = $("modalBg");
+    const modalDate = $("modalDate");
+    const eventTitle = $("eventTitle");
+    const eventTime = $("eventTime");
+    const eventPerson = $("eventPerson");
+    const eventType = $("eventType");
+    const eventReminder = $("eventReminder");
+    const eventNotes = $("eventNotes");
+    const eventList = $("eventList");
+    const status = $("status");
+    const upcomingList = $("upcomingList");
+    const toast = $("toast");
+    const floatingContainer = $("floatingHearts");
+
+    let currentDate = new Date();
+    let selectedDate = null;
+    let allEvents = [];
+    let allTasks = [];
+    let allMemories = [];
+    let settings = {};
+    let deferredInstallPrompt = null;
+
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+    });
+
+    window.installApp = async function() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt = null;
+      } else {
+        showToast("<strong>iPhone install</strong><br>Open in Safari, tap Share, then Add to Home Screen.");
+      }
+    };
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
+
+    setTimeout(() => $("splash").classList.add("hide"), 1100);
+
+    function formatDateKey(year, month, day) {
+      return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+
+    function prettyDate(dateKey) {
+      const [year, month, day] = dateKey.split("-").map(Number);
+      return new Date(year, month - 1, day).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" });
+    }
+
+    function daysUntil(date) {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const target = new Date(date);
+      target.setHours(0,0,0,0);
+      return Math.ceil((target - today) / 86400000);
+    }
+
+    function getEventsForDate(dateKey) {
+      return allEvents.filter(event => event.date === dateKey).sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
+    }
+
+    function getEventDateTime(event) {
+      if (!event.date || !event.time) return null;
+      return new Date(`${event.date}T${event.time}:00`);
+    }
+
+    function getPersonClass(person) {
+      return String(person || "").toLowerCase();
+    }
+
+    function showToast(message) {
+      toast.innerHTML = message;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 5500);
+    }
+
+    async function requestNotificationPermission() {
+      if (!("Notification" in window)) return;
+      if (Notification.permission === "default") await Notification.requestPermission();
+    }
+
+    function sendNotification(event) {
+      const body = `${event.person || "Shared"}${event.time ? " at " + event.time : ""}${event.notes ? " - " + event.notes : ""}`;
+      if ("Notification" in window && Notification.permission === "granted") new Notification(`Calendar alert: ${event.title}`, { body });
+      showToast(`<strong>Calendar alert</strong><br>${event.title}<br>${body}`);
+    }
+
+    async function markAlertSent(event) {
+      try { await updateDoc(doc(db, "calendarEvents", event.id), { alertSent: true }); } catch (error) { console.error(error); }
+    }
+
+    function checkAlerts() {
+      const now = new Date();
+      allEvents.forEach(event => {
+        const eventDateTime = getEventDateTime(event);
+        if (!eventDateTime || event.alertSent) return;
+        const reminderMinutes = Number(event.reminderMinutes || 0);
+        const alertTime = new Date(eventDateTime.getTime() - reminderMinutes * 60000);
+        const diff = now.getTime() - alertTime.getTime();
+        if (diff >= 0 && diff < 60000) {
+          sendNotification(event);
+          markAlertSent(event);
+        }
+      });
+    }
+
+    function renderUpcoming() {
+      const now = new Date();
+      const upcoming = allEvents
+        .map(event => ({ ...event, eventDateTime: getEventDateTime(event) }))
+        .filter(event => event.eventDateTime && event.eventDateTime >= now)
+        .sort((a, b) => a.eventDateTime - b.eventDateTime)
+        .slice(0, 5);
+
+      upcomingList.innerHTML = upcoming.length ? "" : "<li>No upcoming events yet.</li>";
+      upcoming.forEach(event => {
+        const item = document.createElement("li");
+        item.textContent = `${prettyDate(event.date)} at ${event.time} - ${event.title}`;
+        upcomingList.appendChild(item);
+      });
+    }
+
+    function renderDashboard() {
+      const now = new Date();
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      $("totalPlans").textContent = allEvents.length;
+      $("monthPlans").textContent = allEvents.filter(e => {
+        const d = new Date(`${e.date}T00:00:00`);
+        return d.getFullYear() === year && d.getMonth() === month;
+      }).length;
+
+      const nextDate = allEvents
+        .map(event => ({ ...event, eventDateTime: getEventDateTime(event) }))
+        .filter(event => event.eventDateTime && event.eventDateTime >= now && event.eventType === "Date")
+        .sort((a, b) => a.eventDateTime - b.eventDateTime)[0];
+
+      $("nextDateCountdown").textContent = nextDate ? `${daysUntil(nextDate.eventDateTime)} days` : "None";
+
+      const anniversaryEvent = allEvents
+        .map(event => ({ ...event, eventDateTime: getEventDateTime(event) || new Date(`${event.date}T00:00:00`) }))
+        .filter(event => event.eventType === "Anniversary" && event.eventDateTime >= now)
+        .sort((a, b) => a.eventDateTime - b.eventDateTime)[0];
+
+      $("anniversaryCountdown").textContent = anniversaryEvent ? `${daysUntil(anniversaryEvent.eventDateTime)} days` : "Set date";
+    }
+
+    function renderCalendar() {
+      daysEl.innerHTML = "";
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+      monthYearEl.textContent = `${currentDate.toLocaleString("default", { month: "long" })} ${year}`;
+
+      for (let i = 0; i < firstDay; i++) {
+        const emptyDay = document.createElement("div");
+        emptyDay.className = "day empty";
+        daysEl.appendChild(emptyDay);
+      }
+
+      for (let day = 1; day <= lastDate; day++) {
+        const dateKey = formatDateKey(year, month, day);
+        const dayEl = document.createElement("div");
+        dayEl.className = "day";
+
+        const today = new Date();
+        if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) dayEl.classList.add("today");
+
+        dayEl.innerHTML = `<div class="day-number">${day}</div>`;
+
+        getEventsForDate(dateKey).forEach(event => {
+          const eventEl = document.createElement("div");
+          eventEl.className = `event ${getPersonClass(event.person)}`;
+          eventEl.textContent = `${event.time ? event.time + " " : ""}${event.person && event.person !== "Both" ? event.person + ": " : ""}${event.title}`;
+          dayEl.appendChild(eventEl);
+        });
+
+        dayEl.addEventListener("click", () => openModal(dateKey));
+        daysEl.appendChild(dayEl);
+      }
+    }
+
+    window.changeMonth = function(direction) {
+      currentDate.setMonth(currentDate.getMonth() + direction);
+      renderCalendar();
+      renderDashboard();
+    };
+
+    window.openModal = function(dateKey) {
+      selectedDate = dateKey;
+      modalDate.textContent = prettyDate(dateKey);
+      eventTitle.value = "";
+      eventTime.value = "";
+      eventPerson.value = "Both";
+      eventType.value = "Plan";
+      eventReminder.value = "15";
+      eventNotes.value = "";
+      renderEventList();
+      modalBg.style.display = "flex";
+    };
+
+    window.closeModal = function() {
+      modalBg.style.display = "none";
+    };
+
+    window.saveEvent = async function() {
+      const title = eventTitle.value.trim();
+      const time = eventTime.value;
+      const person = eventPerson.value;
+      const reminderMinutes = Number(eventReminder.value);
+      const notes = eventNotes.value.trim();
+
+      if (!title) { alert("Add a title first."); return; }
+      if (time) await requestNotificationPermission();
+
+      await addDoc(collection(db, "calendarEvents"), {
+        date: selectedDate, title, time, person, eventType: eventType.value, reminderMinutes, notes, alertSent: false, createdAt: serverTimestamp()
+      });
+
+      showToast(`<strong>Saved</strong><br>${title} has been added to ${prettyDate(selectedDate)}.`);
+      eventTitle.value = "";
+      eventTime.value = "";
+      eventPerson.value = "Both";
+      eventType.value = "Plan";
+      eventReminder.value = "15";
+      eventNotes.value = "";
+    };
+
+    window.deleteEvent = async function(id) {
+      await deleteDoc(doc(db, "calendarEvents", id));
+      showToast("<strong>Deleted</strong><br>Event removed from the shared calendar.");
+    };
+
+    function renderEventList() {
+      eventList.innerHTML = "";
+      const selectedEvents = getEventsForDate(selectedDate);
+      if (selectedEvents.length === 0) {
+        eventList.innerHTML = "<p>No events saved for this day.</p>";
+        return;
+      }
+
+      selectedEvents.forEach(event => {
+        const item = document.createElement("div");
+        item.className = "event-list-item";
+        const alertText = event.time ? `Alert: ${Number(event.reminderMinutes || 0) === 0 ? "at event time" : event.reminderMinutes + " min before"}` : "No alert set";
+        item.innerHTML = `
+          <div>
+            <strong>${event.time ? event.time + " - " : ""}${event.title}</strong>
+            <span>${event.person || "Both"} · ${event.eventType || "Plan"} · ${alertText}</span>
+            <span>${event.notes || "No notes"}</span>
+          </div>
+          <button class="danger small-btn" onclick="deleteEvent('${event.id}')">Delete</button>
+        `;
+        eventList.appendChild(item);
+      });
+    }
+
+    window.addTask = async function() {
+      const text = $("taskInput").value.trim();
+      if (!text) return;
+      await addDoc(collection(db, "sharedTasks"), { text, done: false, createdAt: serverTimestamp() });
+      $("taskInput").value = "";
+    };
+
+    window.toggleTask = async function(id, done) {
+      await updateDoc(doc(db, "sharedTasks", id), { done: !done });
+    };
+
+    window.deleteTask = async function(id) {
+      await deleteDoc(doc(db, "sharedTasks", id));
+    };
+
+    function renderTasks() {
+      const list = $("taskList");
+      list.innerHTML = allTasks.length ? "" : "<li>No tasks yet.</li>";
+      allTasks.forEach(task => {
+        const item = document.createElement("li");
+        item.innerHTML = `<span class="${task.done ? "task-done" : ""}" onclick="toggleTask('${task.id}', ${task.done})">${task.done ? "✅" : "⬜"} ${task.text}</span>
+        <button class="danger small-btn" style="float:right" onclick="deleteTask('${task.id}')">Delete</button>`;
+        list.appendChild(item);
+      });
+    }
+
+    window.addMemory = async function() {
+      const text = $("memoryInput").value.trim();
+      if (!text) return;
+      await addDoc(collection(db, "memories"), { text, createdAt: serverTimestamp() });
+      $("memoryInput").value = "";
+      showToast("<strong>Memory saved</strong><br>Added to your shared memories.");
+    };
+
+    function renderMemories() {
+      const list = $("memoryList");
+      list.innerHTML = allMemories.length ? "" : "<li>No memories saved yet.</li>";
+      allMemories.slice(0, 6).forEach(memory => {
+        const item = document.createElement("li");
+        item.textContent = memory.text;
+        list.appendChild(item);
+      });
+    }
+
+    const ideas = [
+      "Beach walk and gelato",
+      "Pizza night and a movie",
+      "Sushi date",
+      "Coffee and a walk",
+      "Cook dinner together",
+      "Sunset picnic",
+      "Arcade date",
+      "Dessert crawl",
+      "Board game night",
+      "Try a new restaurant",
+      "Go for dumplings",
+      "Mini golf",
+      "Home spa night",
+      "Museum or gallery date"
+    ];
+
+    window.newDateIdea = function() {
+      $("dateIdea").textContent = ideas[Math.floor(Math.random() * ideas.length)];
+    };
+
+    window.saveSpotifyLink = async function() {
+      const link = $("spotifyInput").value.trim();
+      if (!link) return;
+      await setDoc(doc(db, "settings", "shared"), { ...settings, spotifyLink: link }, { merge: true });
+      $("spotifyInput").value = "";
+      showToast("<strong>Spotify saved</strong><br>Your playlist link has been updated.");
+    };
+
+    function renderSettings() {
+      const link = settings.spotifyLink;
+      const spotifyLink = $("spotifyLink");
+      if (link) {
+        spotifyLink.href = link;
+        spotifyLink.textContent = "Open shared playlist";
+      } else {
+        spotifyLink.removeAttribute("href");
+        spotifyLink.textContent = "No playlist saved yet.";
+      }
+    }
+
+    window.toggleDarkMode = function() {
+      document.body.classList.toggle("dark");
+      localStorage.setItem("izziZacDarkMode", document.body.classList.contains("dark") ? "yes" : "no");
+    };
+
+    if (localStorage.getItem("izziZacDarkMode") === "yes") document.body.classList.add("dark");
+
+    modalBg.addEventListener("click", event => {
+      if (event.target === modalBg) closeModal();
+    });
+
+    function createFloatingHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.innerHTML = Math.random() > 0.5 ? "❤" : "♡";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.bottom = "-30px";
+      heart.style.fontSize = Math.random() * 18 + 14 + "px";
+      heart.style.animationDuration = Math.random() * 6 + 6 + "s";
+      floatingContainer.appendChild(heart);
+      setTimeout(() => heart.remove(), 12000);
+    }
+
+    setInterval(createFloatingHeart, 900);
+
+    document.addEventListener("click", e => {
+      const burstHeart = document.createElement("div");
+      burstHeart.className = "click-heart";
+      burstHeart.innerHTML = "💖";
+      burstHeart.style.left = e.clientX + "px";
+      burstHeart.style.top = e.clientY + "px";
+      document.body.appendChild(burstHeart);
+      setTimeout(() => burstHeart.remove(), 1000);
+    });
+
+    onSnapshot(query(collection(db, "calendarEvents"), orderBy("date")), snapshot => {
+      allEvents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+      status.innerHTML = "<strong>Connected:</strong> you are connected :)";
+      renderCalendar();
+      renderUpcoming();
+      renderDashboard();
+      checkAlerts();
+      if (selectedDate) renderEventList();
+    }, error => {
+      status.innerHTML = "<strong>Not connected:</strong> check your Firebase config and Firestore rules.";
+      console.error(error);
+    });
+
+    onSnapshot(query(collection(db, "sharedTasks"), orderBy("createdAt")), snapshot => {
+      allTasks = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+      renderTasks();
+    });
+
+    onSnapshot(query(collection(db, "memories"), orderBy("createdAt")), snapshot => {
+      allMemories = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() })).reverse();
+      renderMemories();
+    });
+
+    onSnapshot(doc(db, "settings", "shared"), snapshot => {
+      settings = snapshot.exists() ? snapshot.data() : {};
+      renderSettings();
+    });
+
+    renderCalendar();
+    renderDashboard();
+    newDateIdea();
+    setInterval(checkAlerts, 30000);
+  </script>
+</body>
+</html>
