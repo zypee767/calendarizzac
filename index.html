@@ -287,7 +287,18 @@
 
     .day:hover { border-color: var(--pink-500); background: rgba(255,250,253,0.95); transform: translateY(-2px); }
     body.dark .day:hover { background: rgba(255,255,255,0.12); }
-    .day.empty { background: rgba(255,228,239,0.38); cursor: default; transform: none; }
+    .day.empty {
+  background: rgba(255, 228, 239, 0.38);
+  cursor: default;
+  transform: none;
+  opacity: 0.55;
+}
+
+body.dark .day.empty {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  opacity: 0.28;
+}
 
     .day-number {
       width: 30px;
@@ -536,27 +547,6 @@
           <button onclick="newDateIdea()">New idea</button>
         </section>
 
-        <section class="section">
-          <h3>Memories</h3>
-          <ul class="memory-list" id="memoryList"><li>No memories saved yet.</li></ul>
-          <div class="form-row">
-            <input id="memoryInput" placeholder="Save a memory..." />
-            <button onclick="addMemory()">Save</button>
-          </div>
-        </section>
-
-        <section class="section">
-          <h3>Spotify</h3>
-          <div class="spotify-box">
-            <input id="spotifyInput" placeholder="Paste your Spotify playlist link..." />
-            <button onclick="saveSpotifyLink()">Save playlist</button>
-            <a id="spotifyLink" target="_blank" rel="noopener" style="color: var(--rose-700); font-weight: 800;">No playlist saved yet.</a>
-          </div>
-        </section>
-      </div>
-    </div>
-  </main>
-
   <div class="modal-bg" id="modalBg">
     <div class="modal">
       <h2 id="modalDate"></h2>
@@ -654,7 +644,6 @@
     let selectedDate = null;
     let allEvents = [];
     let allTasks = [];
-    let allMemories = [];
     let settings = {};
     let deferredInstallPrompt = null;
 
@@ -923,24 +912,6 @@
       });
     }
 
-    window.addMemory = async function() {
-      const text = $("memoryInput").value.trim();
-      if (!text) return;
-      await addDoc(collection(db, "memories"), { text, createdAt: serverTimestamp() });
-      $("memoryInput").value = "";
-      showToast("<strong>Memory saved</strong><br>Added to your shared memories.");
-    };
-
-    function renderMemories() {
-      const list = $("memoryList");
-      list.innerHTML = allMemories.length ? "" : "<li>No memories saved yet.</li>";
-      allMemories.slice(0, 6).forEach(memory => {
-        const item = document.createElement("li");
-        item.textContent = memory.text;
-        list.appendChild(item);
-      });
-    }
-
     const ideas = [
       "Beach walk and gelato",
       "Pizza night and a movie",
@@ -1035,10 +1006,6 @@
       renderTasks();
     });
 
-    onSnapshot(query(collection(db, "memories"), orderBy("createdAt")), snapshot => {
-      allMemories = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() })).reverse();
-      renderMemories();
-    });
 
     onSnapshot(doc(db, "settings", "shared"), snapshot => {
       settings = snapshot.exists() ? snapshot.data() : {};
